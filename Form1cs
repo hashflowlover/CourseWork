@@ -26,14 +26,14 @@ namespace Kursovaya
             SQLiteConn = new SQLiteConnection();
             dTable = new DataTable();
             pictureBox1.SizeMode = PictureBoxSizeMode.StretchImage;
-            toolStripStatusLabel1.Text = "Откройте файл!";
+            toolStripStatusLabel1.Text = "Open the file!";
         }
 
         private bool OpenDB()
         {
             OpenFileDialog OPF = new OpenFileDialog();
             OPF.InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-            OPF.Filter = "Текстовые файлы (*.sqlite)|*.sqlite|Все файлы (*.*)|*.*";
+            OPF.Filter = "Text files (*.sqlite)|*.sqlite|All files (*.*)|*.*";
             if (OPF.ShowDialog(this) == DialogResult.OK)
             {
                 SQLiteConn = new SQLiteConnection("DataSource=" + OPF.FileName + ";Version=3;");
@@ -103,7 +103,7 @@ namespace Kursovaya
         {
             if (OpenDB() == true)
             {
-                toolStripStatusLabel1.Text = "Выберите таблицу!";
+                toolStripStatusLabel1.Text = "Choos the table!";
                 GetTableNames();
             }
             else return;
@@ -142,7 +142,7 @@ namespace Kursovaya
         
         public List<List<double>> Table2 = new List<List<double>>();
         public List<double> Table2Row = new List<double>();
-        public static double Среднее(int column, List<List<double>> array)
+        public static double Average(int column, List<List<double>> array)
         {
             double sum = 0;
             int row = 0;
@@ -161,7 +161,7 @@ namespace Kursovaya
             }
             return Math.Sqrt(sum);
         }
-        public static double Альфа(int rowIndex, List<List<double>> primalArray, List<List<double>> newArray)
+        public static double Alpha(int rowIndex, List<List<double>> primalArray, List<List<double>> newArray)
         {
             double numerator = 0;
             double divider;
@@ -177,7 +177,7 @@ namespace Kursovaya
                 return 0;
             return (180 / Math.PI) * Math.Acos(numerator / divider);
         }
-        public static double ПервыйПрогноз(int column, List<List<double>> array)
+        public static double FirstPrediction(int column, List<List<double>> array)
         {
             double sum = 0;
             int i = 0;
@@ -194,10 +194,10 @@ namespace Kursovaya
 
             dataGridView2.Rows.Clear();           
             Table2.Clear();
-            chart1.Series["График фазовых координат"].Points.Clear();
-            chart1.Series["График прогнозов"].Points.Clear();
-            chart1.Series["График нижней границы"].Points.Clear();
-            chart1.Series["График верхней границы"].Points.Clear();
+            chart1.Series["1st graph"].Points.Clear();
+            chart1.Series["2nd graph"].Points.Clear();
+            chart1.Series["3rd graph"].Points.Clear();
+            chart1.Series["4th graph"].Points.Clear();
             for (int row = 0; row < dataGridView1.Rows.Count; row++)
             {
                 dataGridView2.Rows.Add();
@@ -207,11 +207,11 @@ namespace Kursovaya
                 Table2.Add(Table2Row);
                 Table2[row][0] = Table1[row][0];
                 Table2[row][1] = MU(row, Table1);
-                Table2[row][2] = Альфа(row, Table1, Table2);
-                Table2[row][5] = ЛевоеМ(row, Table1);
-                Table2[row][6] = ПравоеМ(row, Table1);
-                Table2[row][7] = ЛевоеАльфа(row, Table1, Table2);
-                Table2[row][8] = ПравоеАльфа(row, Table1, Table2);
+                Table2[row][2] = Alpha(row, Table1, Table2);
+                Table2[row][5] = LeftM(row, Table1);
+                Table2[row][6] = RightM(row, Table1);
+                Table2[row][7] = LeftAlpha(row, Table1, Table2);
+                Table2[row][8] = RightAlpha(row, Table1, Table2);
                 Table2[row][9] = Math.Round(Math.Abs(Table2[row][6] - Table2[row][5]), 4) / 2;
                 Table2[row][10] = Math.Round(Math.Abs(Table2[0][1] - Table2[row][1]), 4);
 
@@ -229,33 +229,33 @@ namespace Kursovaya
                 if (dataGridView2.Rows[row].Cells[11].Value.ToString() == "неустойчиво")
                     dataGridView2.Rows[row].DefaultCellStyle.BackColor = Color.FromArgb(255, 255, 90, 90);
 
-                chart1.Series["График фазовых координат"].Points.AddXY(Table2[row][1], Table2[row][2]);
-                chart1.Series["График нижней границы"].Points.AddXY(Table2[row][5], Table2[row][7]);
-                chart1.Series["График верхней границы"].Points.AddXY(Table2[row][6], Table2[row][8]);
-                chart1.Series["График фазовых координат"].Points[row].Label = row.ToString();
-                chart1.Series["График верхней границы"].Points[row].Label = row.ToString();
-                chart1.Series["График нижней границы"].Points[row].Label = row.ToString();
+                chart1.Series["1st graph"].Points.AddXY(Table2[row][1], Table2[row][2]);
+                chart1.Series["2nd graph"].Points.AddXY(Table2[row][5], Table2[row][7]);
+                chart1.Series["3rd graph"].Points.AddXY(Table2[row][6], Table2[row][8]);
+                chart1.Series["4th graph"].Points[row].Label = row.ToString();
+                chart1.Series["5th graph"].Points[row].Label = row.ToString();
+                chart1.Series["6th graph"].Points[row].Label = row.ToString();
             }
-            Table2[0][3] = ПервыйПрогноз(1, Table2);
-            Table2[0][4] = ПервыйПрогноз(2, Table2);
-            Table2[0][11] = ПервыйПрогноз(5, Table2);
-            Table2[0][12] = ПервыйПрогноз(6, Table2);
+            Table2[0][3] = FirstPrediction(1, Table2);
+            Table2[0][4] = SecondPrediction(2, Table2);
+            Table2[0][11] = FirstPrediction(5, Table2);
+            Table2[0][12] = SecondPrediction(6, Table2);
             dataGridView2.Rows[0].Cells[3].Value = Math.Round(Table2[0][3], 4);
 
-            chart1.Series["График прогнозов"].Points.AddXY(Table2[0][3], Table2[0][4]);
-            chart1.Series["График прогнозов"].Points[0].Label = "0";
+            chart1.Series["1st graph"].Points.AddXY(Table2[0][3], Table2[0][4]);
+            chart1.Series["2nd graph"].Points[0].Label = "0";
 
             for (int row = 1; row < dataGridView1.Rows.Count; row++)
             {
-                Table2[row][3] = Прогноз(row, 1, 3, Table2);
-                Table2[row][4] = Прогноз(row, 2, 4, Table2);
-                Table2[row][11] = Прогноз(row, 5, 11, Table2);
-                Table2[row][12] = Прогноз(row, 6, 12, Table2);
+                Table2[row][3] = Prediction(row, 1, 3, Table2);
+                Table2[row][4] = Prediction(row, 2, 4, Table2);
+                Table2[row][11] = Prediction(row, 5, 11, Table2);
+                Table2[row][12] = Prediction(row, 6, 12, Table2);
                 dataGridView2.Rows[row].Cells[3].Value = Math.Round(Table2[row][3], 4);
                 dataGridView2.Rows[row].Cells[4].Value = Math.Round(3600 * Table2[row][4], 6);
 
-                chart1.Series["График прогнозов"].Points.AddXY(Table2[row][3], Table2[row][4]);
-                chart1.Series["График прогнозов"].Points[row].Label = row.ToString();
+                chart1.Series["Prediction"].Points.AddXY(Table2[row][3], Table2[row][4]);
+                chart1.Series["Prediction"].Points[row].Label = row.ToString();
             }
             dataGridView2.Rows.Add();
             Table2Row = new List<double>();
